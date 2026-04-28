@@ -1,0 +1,148 @@
+/* ── Quill Theme Override ── */
+
+/* Toolbar */
+.ql-toolbar.ql-snow {
+    border: none !important;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border) !important;
+    padding: 6px 10px;
+}
+
+.ql-toolbar.ql-snow .ql-stroke {
+    stroke: var(--text-secondary);
+}
+
+.ql-toolbar.ql-snow .ql-fill {
+    fill: var(--text-secondary);
+}
+
+.ql-toolbar.ql-snow .ql-picker {
+    color: var(--text-secondary);
+}
+
+.ql-toolbar.ql-snow .ql-picker-options {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+}
+
+.ql-toolbar.ql-snow button:hover .ql-stroke,
+.ql-toolbar.ql-snow .ql-picker-label:hover .ql-stroke {
+    stroke: var(--accent);
+}
+
+.ql-toolbar.ql-snow button:hover .ql-fill,
+.ql-toolbar.ql-snow .ql-picker-label:hover .ql-fill {
+    fill: var(--accent);
+}
+
+.ql-toolbar.ql-snow button.ql-active .ql-stroke {
+    stroke: var(--accent);
+}
+
+.ql-toolbar.ql-snow button.ql-active .ql-fill {
+    fill: var(--accent);
+}
+
+.ql-snow .ql-picker.ql-expanded .ql-picker-label {
+    border-color: var(--accent);
+}
+
+.ql-snow .ql-picker.ql-expanded .ql-picker-options {
+    border-color: var(--border);
+}
+
+/* Container */
+.ql-container.ql-snow {
+    border: none !important;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.ql-editor {
+    color: var(--text-primary);
+    padding: 16px 20px;
+    line-height: 1.7;
+}
+
+.ql-editor.ql-blank::before {
+    color: var(--text-weak);
+    font-style: normal;
+}
+
+.ql-editor h1, .ql-editor h2, .ql-editor h3 {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.ql-editor blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
+    color: var(--text-secondary);
+}
+
+.ql-editor pre.ql-syntax {
+    background: var(--code-bg);
+    color: var(--text-primary);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    font-size: 13px;
+}
+
+.ql-editor code {
+    background: var(--code-bg);
+    color: var(--accent);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    font-size: 13px;
+}
+
+.ql-editor a {
+    color: var(--accent);
+}
+
+.ql-editor img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 8px 0;
+}
+
+.ql-editor hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
+}
+
+/* Lists */
+.ql-editor ol, .ql-editor ul {
+    padding-left: 1.5em;
+}
+
+.ql-editor li {
+    padding-left: 0;
+}
+
+/* Tooltip */
+.ql-snow .ql-tooltip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    color: var(--text-primary);
+}
+
+.ql-snow .ql-tooltip input[type="text"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-primary);
+}
+
+.ql-snow .ql-tooltip a.ql-action::after {
+    color: var(--accent);
+}

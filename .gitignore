@@ -4,3 +4,6 @@ __pycache__/
 uploads/*
 !uploads/.gitkeep
 .env
+build/
+dist/
+*.spec.bak

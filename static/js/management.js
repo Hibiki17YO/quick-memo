@@ -1,3 +1,24 @@
+// ── Theme ───────────────────────────────────────────────────
+const THEME_ICONS = { light: '☾', dark: '☀' };
+
+function getTheme() {
+    return localStorage.getItem('memo-theme') || 'light';
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.getElementById('theme-btn').textContent = THEME_ICONS[theme];
+}
+
+function toggleTheme() {
+    const next = getTheme() === 'light' ? 'dark' : 'light';
+    localStorage.setItem('memo-theme', next);
+    applyTheme(next);
+}
+
+applyTheme(getTheme());
+
+// ── State ───────────────────────────────────────────────────
 let memos = [];
 let offset = 0;
 const LIMIT = 20;
@@ -25,9 +46,8 @@ async function loadCategories() {
 }
 
 function populateCategoryFilters() {
-    // Main filter
     const filter = document.getElementById('category-filter');
-    const currentVal = filter.value;
+    const cur = filter.value;
     filter.innerHTML = '<option value="">All categories</option>';
     categories.forEach(c => {
         const opt = document.createElement('option');
@@ -35,12 +55,11 @@ function populateCategoryFilters() {
         opt.textContent = c.name;
         filter.appendChild(opt);
     });
-    filter.value = currentVal;
+    filter.value = cur;
 
-    // Edit modal
     const editSel = document.getElementById('edit-category');
     if (editSel) {
-        const editVal = editSel.value;
+        const editCur = editSel.value;
         editSel.innerHTML = '<option value="">No category</option>';
         categories.forEach(c => {
             const opt = document.createElement('option');
@@ -48,7 +67,7 @@ function populateCategoryFilters() {
             opt.textContent = c.name;
             editSel.appendChild(opt);
         });
-        editSel.value = editVal;
+        editSel.value = editCur;
     }
 }
 
@@ -64,23 +83,17 @@ async function loadMemos(append = false) {
     const sort = document.getElementById('sort').value;
     const categoryId = document.getElementById('category-filter').value;
     const tag = document.getElementById('tag-filter').value;
-    const currentOffset = append ? offset : 0;
+    const cur = append ? offset : 0;
 
-    const params = new URLSearchParams({
-        q, sort, limit: LIMIT, offset: currentOffset
-    });
+    const params = new URLSearchParams({ q, sort, limit: LIMIT, offset: cur });
     if (categoryId) params.set('category_id', categoryId);
     if (tag) params.set('tag', tag);
 
     try {
         const res = await fetch(`/api/memos?${params}`);
         const data = await res.json();
-        if (!append) {
-            memos = data;
-            offset = 0;
-        } else {
-            memos = memos.concat(data);
-        }
+        if (!append) { memos = data; offset = 0; }
+        else { memos = memos.concat(data); }
         offset += data.length;
         renderMemos();
         document.getElementById('load-more').style.display = data.length < LIMIT ? 'none' : 'block';
@@ -89,15 +102,13 @@ async function loadMemos(append = false) {
     }
 }
 
-function loadMore() {
-    loadMemos(true);
-}
+function loadMore() { loadMemos(true); }
 
 // ── Render ──────────────────────────────────────────────────
 function renderMemos() {
     const list = document.getElementById('memo-list');
     if (memos.length === 0) {
-        list.innerHTML = '<div class="empty-state"><p>No memos yet. Use Ctrl+Shift+M to open the quick memo window!</p></div>';
+        list.innerHTML = '<div class="empty-state"><p>No memos yet.<br>Use <strong>Ctrl+Shift+M</strong> to open the quick memo window.</p></div>';
         document.getElementById('count').textContent = '';
         document.getElementById('load-more').style.display = 'none';
         return;
@@ -105,21 +116,21 @@ function renderMemos() {
     list.innerHTML = memos.map(m => {
         const tags = m.tags ? m.tags.split(',').filter(Boolean) : [];
         const metaHtml = (m.category_name || tags.length) ? `<div class="memo-meta">
-            ${m.category_name ? `<span class="memo-category">${escapeHtml(m.category_name)}</span>` : ''}
-            ${tags.map(t => `<span class="memo-tag">${escapeHtml(t)}</span>`).join('')}
+            ${m.category_name ? `<span class="memo-category">${esc(m.category_name)}</span>` : ''}
+            ${tags.map(t => `<span class="memo-tag">${esc(t)}</span>`).join('')}
         </div>` : '';
         return `<div class="memo-card ${m.is_pinned ? 'pinned' : ''}" data-id="${m.id}">
             <div class="memo-header">
                 <span class="pin-indicator">${m.is_pinned ? '\u{1F4CC}' : ''}</span>
-                <h3>${escapeHtml(m.title || '(Untitled)')}</h3>
-                <span class="memo-date">${formatDate(m.created_at)}</span>
+                <h3>${esc(m.title || '(Untitled)')}</h3>
+                <span class="memo-date">${fmtDate(m.created_at)}</span>
             </div>
             ${metaHtml}
-            <div class="memo-preview">${escapeHtml(stripHtml(m.content)).substring(0, 150)}</div>
+            <div class="memo-preview">${esc(stripHtml(m.content)).substring(0, 150)}</div>
             <div class="memo-actions">
-                <button onclick="openEdit(${m.id})">Edit</button>
-                <button class="delete-btn" onclick="deleteMemo(${m.id})">Delete</button>
-                <button class="pin-btn" onclick="togglePin(${m.id}, ${m.is_pinned})">
+                <button class="btn" onclick="openEdit(${m.id})">Edit</button>
+                <button class="btn btn-delete" onclick="deleteMemo(${m.id})">Delete</button>
+                <button class="btn btn-pin" onclick="togglePin(${m.id}, ${m.is_pinned})">
                     ${m.is_pinned ? 'Unpin' : 'Pin'}
                 </button>
             </div>
@@ -131,16 +142,12 @@ function renderMemos() {
 // ── Delete ──────────────────────────────────────────────────
 async function deleteMemo(id) {
     if (!confirm('Delete this memo?')) return;
-    try {
-        await fetch(`/api/memos/${id}`, { method: 'DELETE' });
-        loadMemos();
-    } catch (err) {
-        console.error('Delete failed:', err);
-    }
+    try { await fetch(`/api/memos/${id}`, { method: 'DELETE' }); loadMemos(); }
+    catch (err) { console.error('Delete failed:', err); }
 }
 
 // ── Pin toggle ──────────────────────────────────────────────
-async function togglePin(id, currentPinned) {
+async function togglePin(id, cur) {
     try {
         const res = await fetch(`/api/memos/${id}`);
         const memo = await res.json();
@@ -148,17 +155,13 @@ async function togglePin(id, currentPinned) {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                title: memo.title,
-                content: memo.content,
-                is_pinned: currentPinned ? 0 : 1,
-                category_id: memo.category_id,
-                tags: memo.tags
+                title: memo.title, content: memo.content,
+                is_pinned: cur ? 0 : 1,
+                category_id: memo.category_id, tags: memo.tags
             })
         });
         loadMemos();
-    } catch (err) {
-        console.error('Toggle pin failed:', err);
-    }
+    } catch (err) { console.error('Toggle pin failed:', err); }
 }
 
 // ── Edit modal ──────────────────────────────────────────────
@@ -170,16 +173,12 @@ async function openEdit(id) {
 
         document.getElementById('edit-title').value = memo.title;
         document.getElementById('edit-category').value = memo.category_id || '';
-
-        // Tags
         editTags = memo.tags ? memo.tags.split(',').filter(Boolean) : [];
         renderEditTags();
-
         document.getElementById('edit-modal').style.display = 'flex';
 
-        // Create Quill
-        const editorEl = document.getElementById('edit-editor');
-        editorEl.innerHTML = '<div id="edit-quill"></div>';
+        const el = document.getElementById('edit-editor');
+        el.innerHTML = '<div id="edit-quill"></div>';
 
         editQuill = new Quill('#edit-quill', {
             theme: 'snow',
@@ -189,43 +188,29 @@ async function openEdit(id) {
                     [{ header: [1, 2, 3, false] }],
                     [{ list: 'ordered' }, { list: 'bullet' }],
                     ['blockquote', 'code-block'],
-                    ['image'],
-                    ['clean']
+                    ['image'], ['clean']
                 ]
             },
             placeholder: 'Edit memo...'
         });
-
         editQuill.root.innerHTML = memo.content;
 
-        // Image handler for edit
         editQuill.getModule('toolbar').addHandler('image', () => {
             const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.click();
-            input.onchange = async () => {
-                const file = input.files[0];
-                if (file) await insertImageEdit(file);
-            };
+            input.type = 'file'; input.accept = 'image/*'; input.click();
+            input.onchange = async () => { if (input.files[0]) await insertImageEdit(input.files[0]); };
         });
-
-    } catch (err) {
-        console.error('Open edit failed:', err);
-    }
+    } catch (err) { console.error('Open edit failed:', err); }
 }
 
-// Edit paste handler (document-level)
 document.addEventListener('paste', async (e) => {
     if (!document.querySelector('#edit-quill .ql-editor:focus')) return;
     const items = e.clipboardData?.items;
     if (!items) return;
     for (const item of items) {
         if (item.type.startsWith('image/')) {
-            e.preventDefault();
-            e.stopPropagation();
-            const file = item.getAsFile();
-            if (file) await insertImageEdit(file);
+            e.preventDefault(); e.stopPropagation();
+            if (item.getAsFile()) await insertImageEdit(item.getAsFile());
             return;
         }
     }
@@ -241,40 +226,31 @@ async function insertImageEdit(file) {
         const range = editQuill.getSelection(true);
         editQuill.insertEmbed(range.index, 'image', data.url);
         editQuill.setSelection(range.index + 1);
-    } catch (err) {
-        console.error('Image upload failed:', err);
-    }
+    } catch (err) { console.error('Image upload failed:', err); }
 }
 
 // Edit tags
 function renderEditTags() {
     const wrap = document.getElementById('edit-tags-chips');
     wrap.innerHTML = editTags.map((t, i) =>
-        `<span class="tag-chip">${escapeHtml(t)}<span class="remove-tag" data-i="${i}">&times;</span></span>`
+        `<span class="tag-chip">${esc(t)}<span class="remove-tag" data-i="${i}">&times;</span></span>`
     ).join('');
 }
 
 document.getElementById('edit-tags-chips').addEventListener('click', (e) => {
     const rm = e.target.closest('.remove-tag');
-    if (rm) {
-        editTags.splice(parseInt(rm.dataset.i), 1);
-        renderEditTags();
-    }
+    if (rm) { editTags.splice(parseInt(rm.dataset.i), 1); renderEditTags(); }
 });
 
 document.getElementById('edit-tags-input').addEventListener('keydown', (e) => {
     if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
-        const val = e.target.value.trim();
-        if (val && !editTags.includes(val)) {
-            editTags.push(val);
-            renderEditTags();
-        }
+        const v = e.target.value.trim();
+        if (v && !editTags.includes(v)) { editTags.push(v); renderEditTags(); }
         e.target.value = '';
     }
     if (e.key === 'Backspace' && !e.target.value && editTags.length) {
-        editTags.pop();
-        renderEditTags();
+        editTags.pop(); renderEditTags();
     }
 });
 
@@ -285,39 +261,29 @@ document.getElementById('edit-tags-wrap').addEventListener('click', () => {
 async function saveEdit() {
     if (!editingId || !editQuill) return;
     const content = editQuill.root.innerHTML;
-    const plainText = editQuill.getText().trim();
-    const title = document.getElementById('edit-title').value || plainText.split('\n')[0].substring(0, 80);
-    const categoryId = document.getElementById('edit-category').value || null;
-    const tagsStr = editTags.join(',');
-
-    // Need to get current is_pinned
-    const currentMemo = memos.find(m => m.id === editingId);
-    const isPinned = currentMemo ? currentMemo.is_pinned : 0;
+    const plain = editQuill.getText().trim();
+    const title = document.getElementById('edit-title').value || plain.split('\n')[0].substring(0, 80);
+    const catId = document.getElementById('edit-category').value || null;
+    const cur = memos.find(m => m.id === editingId);
 
     try {
         await fetch(`/api/memos/${editingId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                title,
-                content,
-                is_pinned: isPinned,
-                category_id: categoryId ? parseInt(categoryId) : null,
-                tags: tagsStr
+                title, content,
+                is_pinned: cur ? cur.is_pinned : 0,
+                category_id: catId ? parseInt(catId) : null,
+                tags: editTags.join(',')
             })
         });
-        closeModal();
-        loadMemos();
-    } catch (err) {
-        console.error('Save edit failed:', err);
-    }
+        closeModal(); loadMemos();
+    } catch (err) { console.error('Save edit failed:', err); }
 }
 
 function closeModal() {
     document.getElementById('edit-modal').style.display = 'none';
-    editingId = null;
-    editQuill = null;
-    editTags = [];
+    editingId = null; editQuill = null; editTags = [];
 }
 
 // ── Settings modal ──────────────────────────────────────────
@@ -334,13 +300,13 @@ function closeSettings() {
 function renderCategoryList() {
     const list = document.getElementById('cat-list');
     if (categories.length === 0) {
-        list.innerHTML = '<p style="color:#999;font-size:13px;">No categories yet.</p>';
+        list.innerHTML = '<p style="color:var(--text-weak);font-size:13px;">No categories yet.</p>';
         return;
     }
     list.innerHTML = categories.map(c => `
         <div class="cat-item" data-id="${c.id}">
-            <span>${escapeHtml(c.name)}</span>
-            <button onclick="editCategory(${c.id}, '${escapeHtml(c.name)}')">Edit</button>
+            <span>${esc(c.name)}</span>
+            <button onclick="editCategory(${c.id}, '${esc(c.name)}')">Edit</button>
             <button class="cat-delete" onclick="deleteCategory(${c.id})">Delete</button>
         </div>
     `).join('');
@@ -359,9 +325,7 @@ async function addCategory() {
         input.value = '';
         await loadCategories();
         renderCategoryList();
-    } catch (err) {
-        console.error('Add category failed:', err);
-    }
+    } catch (err) { console.error('Add category failed:', err); }
 }
 
 async function editCategory(id, oldName) {
@@ -375,55 +339,45 @@ async function editCategory(id, oldName) {
         });
         await loadCategories();
         renderCategoryList();
-    } catch (err) {
-        console.error('Edit category failed:', err);
-    }
+    } catch (err) { console.error('Edit category failed:', err); }
 }
 
 async function deleteCategory(id) {
-    if (!confirm('Delete this category? Memos in this category will become uncategorized.')) return;
+    if (!confirm('Delete this category? Memos will become uncategorized.')) return;
     try {
         await fetch(`/api/categories/${id}`, { method: 'DELETE' });
         await loadCategories();
         renderCategoryList();
         loadMemos();
-    } catch (err) {
-        console.error('Delete category failed:', err);
-    }
+    } catch (err) { console.error('Delete category failed:', err); }
 }
 
 async function loadHotkeySettings() {
     try {
         const res = await fetch('/api/settings');
-        const settings = await res.json();
-        document.getElementById('hotkey-toggle').value = settings.hotkey_toggle || 'ctrl+shift+m';
-        document.getElementById('hotkey-quit').value = settings.hotkey_quit || 'ctrl+shift+q';
-    } catch (err) {
-        console.error('Load settings failed:', err);
-    }
+        const s = await res.json();
+        document.getElementById('hotkey-toggle').value = s.hotkey_toggle || 'ctrl+shift+m';
+        document.getElementById('hotkey-quit').value = s.hotkey_quit || 'ctrl+shift+q';
+    } catch (err) { console.error('Load settings failed:', err); }
 }
 
 async function saveHotkeys() {
-    const toggle = document.getElementById('hotkey-toggle').value.trim();
-    const quit = document.getElementById('hotkey-quit').value.trim();
     try {
         await fetch('/api/settings', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 settings: {
-                    hotkey_toggle: toggle,
-                    hotkey_quit: quit
+                    hotkey_toggle: document.getElementById('hotkey-toggle').value.trim(),
+                    hotkey_quit: document.getElementById('hotkey-quit').value.trim()
                 }
             })
         });
-        alert('Hotkeys saved. Restart the app to apply changes.');
-    } catch (err) {
-        console.error('Save hotkeys failed:', err);
-    }
+        alert('Hotkeys saved. Restart to apply.');
+    } catch (err) { console.error('Save hotkeys failed:', err); }
 }
 
-// Close modals on click outside
+// Close modals
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('modal')) {
         if (e.target.id === 'edit-modal') closeModal();
@@ -431,43 +385,30 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// ESC to close
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        closeModal();
-        closeSettings();
-    }
+    if (e.key === 'Escape') { closeModal(); closeSettings(); }
 });
 
-// Enter in new category input
 document.getElementById('new-cat-name').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        addCategory();
-    }
+    if (e.key === 'Enter') { e.preventDefault(); addCategory(); }
 });
 
 // ── Helpers ─────────────────────────────────────────────────
 function stripHtml(html) {
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    return tmp.textContent || '';
+    const d = document.createElement('div'); d.innerHTML = html;
+    return d.textContent || '';
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+function esc(text) {
+    const d = document.createElement('div'); d.textContent = text;
+    return d.innerHTML;
 }
 
-function formatDate(iso) {
+function fmtDate(iso) {
     try {
-        const d = new Date(iso);
-        return d.toLocaleDateString('zh-CN', {
+        return new Date(iso).toLocaleDateString('zh-CN', {
             year: 'numeric', month: '2-digit', day: '2-digit',
             hour: '2-digit', minute: '2-digit'
         });
-    } catch {
-        return iso;
-    }
+    } catch { return iso; }
 }

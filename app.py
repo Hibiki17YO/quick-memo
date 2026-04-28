@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from pathlib import Path
 import uuid
 
+from paths import bundle_dir, app_dir
 from db import (
     create_memo, get_memos, get_memo, update_memo, delete_memo,
     create_image, delete_image,
@@ -16,11 +17,16 @@ from db import (
 
 app = FastAPI()
 
-BASE_DIR = Path(__file__).parent
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
-app.mount("/uploads", StaticFiles(directory=str(BASE_DIR / "uploads")), name="uploads")
+BUNDLE = bundle_dir()
+APP = app_dir()
 
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+# Ensure uploads dir exists at runtime location
+(APP / "uploads").mkdir(exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=str(BUNDLE / "static")), name="static")
+app.mount("/uploads", StaticFiles(directory=str(APP / "uploads")), name="uploads")
+
+templates = Jinja2Templates(directory=str(BUNDLE / "templates"))
 
 
 class MemoCreate(BaseModel):
@@ -147,7 +153,7 @@ async def write_settings(data: SettingsUpdate):
 async def upload_image(file: UploadFile = File(...), memo_id: int = Form(0)):
     ext = Path(file.filename).suffix if file.filename else ".png"
     filename = f"{uuid.uuid4().hex}{ext}"
-    dest = BASE_DIR / "uploads" / filename
+    dest = APP / "uploads" / filename
     content = await file.read()
     dest.write_bytes(content)
     image_id = create_image(memo_id, filename, file.filename or "image.png")

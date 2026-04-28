@@ -3,7 +3,9 @@ from pathlib import Path
 from datetime import datetime, timezone
 import re
 
-DB_PATH = Path(__file__).parent / "memos.db"
+from paths import app_dir
+
+DB_PATH = app_dir() / "memos.db"
 
 
 def get_connection() -> sqlite3.Connection:
@@ -251,7 +253,7 @@ def delete_memo(memo_id: int) -> bool:
     conn.execute("DELETE FROM memos WHERE id = ?", (memo_id,))
     conn.commit()
     conn.close()
-    uploads_dir = Path(__file__).parent / "uploads"
+    uploads_dir = app_dir() / "uploads"
     for img in images:
         p = uploads_dir / img["filename"]
         if p.exists():
@@ -282,7 +284,7 @@ def delete_image(image_id: int) -> bool:
     conn.execute("DELETE FROM images WHERE id = ?", (image_id,))
     conn.commit()
     conn.close()
-    p = Path(__file__).parent / "uploads" / row["filename"]
+    p = app_dir() / "uploads" / row["filename"]
     if p.exists():
         p.unlink()
     return True

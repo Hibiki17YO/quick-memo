@@ -4,10 +4,15 @@
     <meta charset="UTF-8">
     <title>Quick Memo</title>
     <link rel="stylesheet" href="/static/vendor/quill.snow.css">
+    <link rel="stylesheet" href="/static/css/quill-override.css">
     <link rel="stylesheet" href="/static/css/editor.css">
 </head>
 <body>
     <div id="app">
+        <div class="editor-header">
+            <span class="editor-title">Quick Memo</span>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" id="theme-btn"></button>
+        </div>
         <div id="editor"></div>
         <div id="meta-bar">
             <select id="category-select">
@@ -20,7 +25,7 @@
         </div>
         <div id="status-bar">
             <span id="toast"></span>
-            <span class="shortcut-hint">Ctrl+Enter to save</span>
+            <span class="shortcut-hint">Ctrl+Enter</span>
             <button id="save-btn" onclick="saveMemo()">Save</button>
         </div>
     </div>

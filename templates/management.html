@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Memos</title>
     <link rel="stylesheet" href="/static/vendor/quill.snow.css">
+    <link rel="stylesheet" href="/static/css/quill-override.css">
     <link rel="stylesheet" href="/static/css/management.css">
 </head>
 <body>
@@ -12,15 +13,18 @@
         <header>
             <div class="header-top">
                 <h1>My Memos</h1>
-                <button class="settings-btn" onclick="openSettings()">Settings</button>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme" id="theme-btn"></button>
+                    <button class="settings-btn" onclick="openSettings()">Settings</button>
+                </div>
             </div>
             <div class="controls">
-                <input type="text" id="search" placeholder="Search..." oninput="debounceSearch()">
-                <select id="category-filter" onchange="loadMemos()">
+                <input type="text" class="search-input" id="search" placeholder="Search..." oninput="debounceSearch()">
+                <select class="filter-select" id="category-filter" onchange="loadMemos()">
                     <option value="">All categories</option>
                 </select>
-                <input type="text" id="tag-filter" placeholder="Filter tag..." oninput="debounceSearch()">
-                <select id="sort" onchange="loadMemos()">
+                <input type="text" class="search-input" id="tag-filter" placeholder="Filter tag..." oninput="debounceSearch()" style="max-width:140px">
+                <select class="filter-select" id="sort" onchange="loadMemos()">
                     <option value="newest">Newest</option>
                     <option value="oldest">Oldest</option>
                 </select>
@@ -28,7 +32,7 @@
         </header>
         <main id="memo-list"></main>
         <div id="load-more" style="display:none">
-            <button onclick="loadMore()">Load more...</button>
+            <button onclick="loadMore()">Load more</button>
         </div>
         <div id="count"></div>
     </div>
@@ -52,14 +56,14 @@
             </div>
             <div id="edit-editor"></div>
             <div class="modal-footer">
-                <button class="save-btn" onclick="saveEdit()">Save</button>
+                <button class="btn-primary" onclick="saveEdit()">Save</button>
             </div>
         </div>
     </div>
 
     <!-- Settings Modal -->
-    <div id="settings-modal" class="modal" style="display:none">
-        <div class="modal-content settings-modal-content">
+    <div id="settings-modal" class="modal settings-modal" style="display:none">
+        <div class="modal-content">
             <div class="modal-header">
                 <h2>Settings</h2>
                 <button class="close-btn" onclick="closeSettings()">&times;</button>
@@ -76,14 +80,14 @@
                 <section>
                     <h3>Hotkeys</h3>
                     <div class="hotkey-row">
-                        <label>Toggle window:</label>
+                        <label>Toggle window</label>
                         <input type="text" id="hotkey-toggle" placeholder="ctrl+shift+m">
                     </div>
                     <div class="hotkey-row">
-                        <label>Quit app:</label>
+                        <label>Quit app</label>
                         <input type="text" id="hotkey-quit" placeholder="ctrl+shift+q">
                     </div>
-                    <button class="save-btn" onclick="saveHotkeys()">Save Hotkeys</button>
+                    <button class="btn-primary" onclick="saveHotkeys()">Save Hotkeys</button>
                     <p class="hotkey-note">Changes take effect after restart.</p>
                 </section>
             </div>
