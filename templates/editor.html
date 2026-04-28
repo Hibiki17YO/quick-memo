@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Quick Memo</title>
+    <link rel="stylesheet" href="/static/vendor/quill.snow.css">
+    <link rel="stylesheet" href="/static/css/editor.css">
+</head>
+<body>
+    <div id="app">
+        <div id="editor"></div>
+        <div id="meta-bar">
+            <select id="category-select">
+                <option value="">No category</option>
+            </select>
+            <div id="tags-input-wrap">
+                <div id="tags-chips"></div>
+                <input type="text" id="tags-input" placeholder="Tags (space to add)">
+            </div>
+        </div>
+        <div id="status-bar">
+            <span id="toast"></span>
+            <span class="shortcut-hint">Ctrl+Enter to save</span>
+            <button id="save-btn" onclick="saveMemo()">Save</button>
+        </div>
+    </div>
+    <script src="/static/vendor/quill.min.js"></script>
+    <script src="/static/js/editor.js"></script>
+</body>
+</html>

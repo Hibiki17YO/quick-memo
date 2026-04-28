@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Memos</title>
+    <link rel="stylesheet" href="/static/vendor/quill.snow.css">
+    <link rel="stylesheet" href="/static/css/management.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-top">
+                <h1>My Memos</h1>
+                <button class="settings-btn" onclick="openSettings()">Settings</button>
+            </div>
+            <div class="controls">
+                <input type="text" id="search" placeholder="Search..." oninput="debounceSearch()">
+                <select id="category-filter" onchange="loadMemos()">
+                    <option value="">All categories</option>
+                </select>
+                <input type="text" id="tag-filter" placeholder="Filter tag..." oninput="debounceSearch()">
+                <select id="sort" onchange="loadMemos()">
+                    <option value="newest">Newest</option>
+                    <option value="oldest">Oldest</option>
+                </select>
+            </div>
+        </header>
+        <main id="memo-list"></main>
+        <div id="load-more" style="display:none">
+            <button onclick="loadMore()">Load more...</button>
+        </div>
+        <div id="count"></div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal" style="display:none">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Memo</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <input type="text" id="edit-title" placeholder="Title (optional)">
+            <div class="edit-meta">
+                <select id="edit-category">
+                    <option value="">No category</option>
+                </select>
+                <div id="edit-tags-wrap">
+                    <div id="edit-tags-chips"></div>
+                    <input type="text" id="edit-tags-input" placeholder="Tags (space to add)">
+                </div>
+            </div>
+            <div id="edit-editor"></div>
+            <div class="modal-footer">
+                <button class="save-btn" onclick="saveEdit()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal" style="display:none">
+        <div class="modal-content settings-modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="close-btn" onclick="closeSettings()">&times;</button>
+            </div>
+            <div class="settings-body">
+                <section>
+                    <h3>Categories</h3>
+                    <div id="cat-list"></div>
+                    <div class="cat-add-row">
+                        <input type="text" id="new-cat-name" placeholder="New category name">
+                        <button onclick="addCategory()">Add</button>
+                    </div>
+                </section>
+                <section>
+                    <h3>Hotkeys</h3>
+                    <div class="hotkey-row">
+                        <label>Toggle window:</label>
+                        <input type="text" id="hotkey-toggle" placeholder="ctrl+shift+m">
+                    </div>
+                    <div class="hotkey-row">
+                        <label>Quit app:</label>
+                        <input type="text" id="hotkey-quit" placeholder="ctrl+shift+q">
+                    </div>
+                    <button class="save-btn" onclick="saveHotkeys()">Save Hotkeys</button>
+                    <p class="hotkey-note">Changes take effect after restart.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/vendor/quill.min.js"></script>
+    <script src="/static/js/management.js"></script>
+</body>
+</html>
