@@ -62,6 +62,9 @@ def init_db():
     defaults = {
         "hotkey_toggle": "ctrl+shift+m",
         "hotkey_quit": "ctrl+shift+q",
+        "window_width": "440",
+        "window_height": "460",
+        "editor_toolbar": '["bold","italic","underline","strike","header","list-ordered","list-bullet","blockquote","code-block","image","clean"]',
     }
     for k, v in defaults.items():
         conn.execute(

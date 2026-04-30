@@ -137,12 +137,13 @@ class WindowAPI:
         }
 
 
-def create_window(api: WindowAPI, url: str = "http://127.0.0.1:18080/api/editor-html"):
+def create_window(api: WindowAPI, url: str = "http://127.0.0.1:18080/api/editor-html",
+                  width: int = 440, height: int = 460):
     window = webview.create_window(
         title="Quick Memo",
         url=url,
-        width=440,
-        height=460,
+        width=max(width, 380),
+        height=max(height, 320),
         on_top=True,
         background_color="#fafafa",
         min_size=(380, 320),

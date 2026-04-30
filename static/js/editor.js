@@ -1,13 +1,11 @@
 // ── Theme ───────────────────────────────────────────────────
-const THEME_ICONS = { light: '☾', dark: '☀' };
-
 function getTheme() {
     return localStorage.getItem('memo-theme') || 'light';
 }
 
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
-    document.getElementById('theme-btn').textContent = THEME_ICONS[theme];
+    document.getElementById('theme-btn').textContent = theme === 'light' ? 'Dark' : 'Light';
     const api = window.pywebview?.api;
     if (api?.set_dark_titlebar) {
         api.set_dark_titlebar(theme === 'dark');
@@ -49,31 +47,62 @@ window.addEventListener('pywebviewready', async () => {
         const state = await api.get_state();
         document.getElementById('pin-btn').classList.toggle('active', state.is_on_top);
     }
-    // Apply caption color matching current theme
     if (api?.set_dark_titlebar) {
         api.set_dark_titlebar(getTheme() === 'dark');
     }
 });
 
-// ── Quill Editor ────────────────────────────────────────────
-const quill = new Quill('#editor', {
-    theme: 'snow',
-    modules: {
-        toolbar: [
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ header: [1, 2, 3, false] }],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['blockquote', 'code-block'],
-            ['image'],
-            ['clean']
-        ]
-    },
-    placeholder: 'Write something...'
-});
-
-// ── Tags ────────────────────────────────────────────────────
+// ── Quill Editor (init after settings load) ─────────────────
+let quill = null;
 let tags = [];
 
+async function initEditor() {
+    let toolbarKeys = window.TOOLBAR_DEFAULT;
+    try {
+        const res = await fetch('/api/settings');
+        const settings = await res.json();
+        if (settings.editor_toolbar) {
+            try {
+                const parsed = JSON.parse(settings.editor_toolbar);
+                if (Array.isArray(parsed) && parsed.length) toolbarKeys = parsed;
+            } catch {}
+        }
+    } catch (err) {
+        console.warn('settings load failed, using defaults', err);
+    }
+
+    const toolbarConfig = window.buildQuillToolbar(toolbarKeys);
+
+    quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: toolbarConfig,
+        },
+        placeholder: 'Write something...'
+    });
+
+    // Image handler
+    const tb = quill.getModule('toolbar');
+    if (tb) {
+        tb.addHandler('image', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.click();
+            input.onchange = async () => {
+                if (input.files[0]) await insertImage(input.files[0]);
+            };
+        });
+    }
+
+    quill.root.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); saveMemo(); }
+    });
+}
+
+initEditor();
+
+// ── Tags ────────────────────────────────────────────────────
 function renderTags() {
     const wrap = document.getElementById('tags-chips');
     wrap.innerHTML = tags.map((t, i) =>
@@ -127,17 +156,7 @@ async function loadCategories() {
 }
 loadCategories();
 
-// ── Image handler ───────────────────────────────────────────
-quill.getModule('toolbar').addHandler('image', () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.click();
-    input.onchange = async () => {
-        if (input.files[0]) await insertImage(input.files[0]);
-    };
-});
-
+// ── Image paste ─────────────────────────────────────────────
 document.addEventListener('paste', async (e) => {
     if (!document.querySelector('.ql-editor:focus')) return;
     const items = e.clipboardData?.items;
@@ -154,6 +173,7 @@ document.addEventListener('paste', async (e) => {
 }, true);
 
 async function insertImage(file) {
+    if (!quill) return;
     const form = new FormData();
     form.append('file', file);
     form.append('memo_id', '0');
@@ -170,6 +190,7 @@ async function insertImage(file) {
 
 // ── Save ────────────────────────────────────────────────────
 async function saveMemo() {
+    if (!quill) return;
     const content = quill.root.innerHTML;
     const plain = quill.getText().trim();
     if (!plain) { showToast('Empty!', 'error'); return; }
@@ -199,10 +220,6 @@ async function saveMemo() {
         showToast('Network error', 'error');
     }
 }
-
-quill.root.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); saveMemo(); }
-});
 
 // ── Toast ───────────────────────────────────────────────────
 function showToast(msg, type) {

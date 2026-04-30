@@ -290,7 +290,70 @@ function closeModal() {
 function openSettings() {
     document.getElementById('settings-modal').style.display = 'flex';
     renderCategoryList();
-    loadHotkeySettings();
+    loadAllSettings();
+}
+
+async function loadAllSettings() {
+    try {
+        const res = await fetch('/api/settings');
+        const s = await res.json();
+        // Hotkeys
+        document.getElementById('hotkey-toggle').value = s.hotkey_toggle || 'ctrl+shift+m';
+        document.getElementById('hotkey-quit').value = s.hotkey_quit || 'ctrl+shift+q';
+        // Window size
+        document.getElementById('window-width').value = s.window_width || '440';
+        document.getElementById('window-height').value = s.window_height || '460';
+        // Toolbar
+        let enabled = window.TOOLBAR_DEFAULT;
+        if (s.editor_toolbar) {
+            try {
+                const parsed = JSON.parse(s.editor_toolbar);
+                if (Array.isArray(parsed)) enabled = parsed;
+            } catch {}
+        }
+        renderToolbarOptions(enabled);
+    } catch (err) { console.error('Load settings failed:', err); }
+}
+
+function renderToolbarOptions(enabledKeys) {
+    const enabled = new Set(enabledKeys);
+    const list = document.getElementById('toolbar-options-list');
+    list.innerHTML = window.TOOLBAR_CATALOG.map(o => `
+        <label class="toolbar-option">
+            <input type="checkbox" data-key="${o.key}" ${enabled.has(o.key) ? 'checked' : ''}>
+            <span>${o.label}</span>
+        </label>
+    `).join('');
+}
+
+async function saveWindowSize() {
+    const w = document.getElementById('window-width').value.trim();
+    const h = document.getElementById('window-height').value.trim();
+    try {
+        await fetch('/api/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                settings: { window_width: w, window_height: h }
+            })
+        });
+        alert('Window size saved. Restart to apply.');
+    } catch (err) { console.error('Save window size failed:', err); }
+}
+
+async function saveToolbar() {
+    const checks = document.querySelectorAll('#toolbar-options-list input[type=checkbox]');
+    const enabled = Array.from(checks).filter(c => c.checked).map(c => c.dataset.key);
+    try {
+        await fetch('/api/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                settings: { editor_toolbar: JSON.stringify(enabled) }
+            })
+        });
+        alert('Toolbar saved. Reopen the editor window to apply.');
+    } catch (err) { console.error('Save toolbar failed:', err); }
 }
 
 function closeSettings() {
@@ -350,15 +413,6 @@ async function deleteCategory(id) {
         renderCategoryList();
         loadMemos();
     } catch (err) { console.error('Delete category failed:', err); }
-}
-
-async function loadHotkeySettings() {
-    try {
-        const res = await fetch('/api/settings');
-        const s = await res.json();
-        document.getElementById('hotkey-toggle').value = s.hotkey_toggle || 'ctrl+shift+m';
-        document.getElementById('hotkey-quit').value = s.hotkey_quit || 'ctrl+shift+q';
-    } catch (err) { console.error('Load settings failed:', err); }
 }
 
 async function saveHotkeys() {

@@ -671,6 +671,41 @@ header {
     margin-top: 10px;
 }
 
+/* Toolbar checkboxes */
+.toolbar-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 12px;
+    margin-bottom: 14px;
+}
+
+.toolbar-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 13px;
+}
+
+.toolbar-option:hover {
+    border-color: var(--accent);
+}
+
+.toolbar-option input[type="checkbox"] {
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.toolbar-option span {
+    color: var(--text-primary);
+    user-select: none;
+}
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

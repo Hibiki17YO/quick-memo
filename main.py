@@ -91,7 +91,13 @@ def main():
 
     logger.info("Opening memo window...")
     api = WindowAPI()
-    window = create_window(api)
+    try:
+        win_w = int(get_setting("window_width", "440"))
+        win_h = int(get_setting("window_height", "460"))
+    except ValueError:
+        win_w, win_h = 440, 460
+    logger.info(f"  Window size: {win_w}x{win_h}")
+    window = create_window(api, width=win_w, height=win_h)
     webview.start(debug=False)
 
     logger.info("Application closed.")

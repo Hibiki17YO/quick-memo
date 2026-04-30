@@ -60,6 +60,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
+    icon=os.path.join(ROOT, 'dist', 'icon.ico'),
     console=False,          # No console window
     disable_windowed_traceback=False,
     argv_emulation=False,

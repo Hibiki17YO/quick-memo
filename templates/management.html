@@ -90,11 +90,32 @@
                     <button class="btn-primary" onclick="saveHotkeys()">Save Hotkeys</button>
                     <p class="hotkey-note">Changes take effect after restart.</p>
                 </section>
+                <section>
+                    <h3>Window Size</h3>
+                    <div class="hotkey-row">
+                        <label>Width (px)</label>
+                        <input type="number" id="window-width" min="380" max="2000" placeholder="440">
+                    </div>
+                    <div class="hotkey-row">
+                        <label>Height (px)</label>
+                        <input type="number" id="window-height" min="320" max="2000" placeholder="460">
+                    </div>
+                    <button class="btn-primary" onclick="saveWindowSize()">Save Size</button>
+                    <p class="hotkey-note">Changes take effect after restart.</p>
+                </section>
+                <section>
+                    <h3>Editor Toolbar</h3>
+                    <p class="hotkey-note" style="margin-bottom:10px">Choose which formatting buttons appear in the quick memo editor.</p>
+                    <div id="toolbar-options-list" class="toolbar-options"></div>
+                    <button class="btn-primary" onclick="saveToolbar()">Save Toolbar</button>
+                    <p class="hotkey-note">Reopen the editor window to apply.</p>
+                </section>
             </div>
         </div>
     </div>
 
     <script src="/static/vendor/quill.min.js"></script>
+    <script src="/static/js/toolbar-options.js"></script>
     <script src="/static/js/management.js"></script>
 </body>
 </html>
