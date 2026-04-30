@@ -66,44 +66,51 @@ body {
     height: 100%;
 }
 
-/* ── Header ── */
-.editor-header {
+/* ── Toolbar (under native title bar) ── */
+.toolbar-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 8px 12px;
+    height: 30px;
     background: var(--surface);
     border-bottom: 1px solid var(--divider);
     flex-shrink: 0;
+    padding: 0 4px;
 }
 
-.editor-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-weak);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
+.toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
 }
 
-.theme-toggle {
-    width: 28px;
-    height: 28px;
+.tb-btn {
+    width: 30px;
+    height: 24px;
     border: none;
     background: transparent;
     color: var(--text-secondary);
     cursor: pointer;
-    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
-    transition: all 0.15s ease;
+    font-size: 13px;
+    font-family: var(--font);
+    border-radius: 4px;
+    transition: background 0.12s ease, color 0.12s ease;
 }
 
-.theme-toggle:hover {
-    background: var(--accent-light);
-    color: var(--accent);
+.tb-btn:hover {
+    background: var(--divider);
+    color: var(--text-primary);
 }
+
+.tb-btn.active {
+    color: var(--accent);
+    background: var(--accent-light);
+}
+
+#pin-btn { font-size: 12px; }
 
 /* ── Editor ── */
 #editor {

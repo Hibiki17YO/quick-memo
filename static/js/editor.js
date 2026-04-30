@@ -1,5 +1,5 @@
 // ── Theme ───────────────────────────────────────────────────
-const THEME_ICONS = { light: '☾', dark: '☀' }; // ☾ / ☀
+const THEME_ICONS = { light: '☾', dark: '☀' };
 
 function getTheme() {
     return localStorage.getItem('memo-theme') || 'light';
@@ -8,6 +8,10 @@ function getTheme() {
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     document.getElementById('theme-btn').textContent = THEME_ICONS[theme];
+    const api = window.pywebview?.api;
+    if (api?.set_dark_titlebar) {
+        api.set_dark_titlebar(theme === 'dark');
+    }
 }
 
 function toggleTheme() {
@@ -17,6 +21,39 @@ function toggleTheme() {
 }
 
 applyTheme(getTheme());
+
+// ── Window controls (pywebview JS API) ──────────────────────
+function pyApi() {
+    return window.pywebview?.api;
+}
+
+async function togglePin() {
+    const api = pyApi();
+    if (!api?.toggle_on_top) return;
+    const onTop = await api.toggle_on_top();
+    document.getElementById('pin-btn').classList.toggle('active', onTop);
+}
+
+async function openManagement() {
+    const api = pyApi();
+    if (api?.open_management_page) {
+        await api.open_management_page();
+    } else {
+        window.open('http://127.0.0.1:18080', '_blank');
+    }
+}
+
+window.addEventListener('pywebviewready', async () => {
+    const api = pyApi();
+    if (api?.get_state) {
+        const state = await api.get_state();
+        document.getElementById('pin-btn').classList.toggle('active', state.is_on_top);
+    }
+    // Apply caption color matching current theme
+    if (api?.set_dark_titlebar) {
+        api.set_dark_titlebar(getTheme() === 'dark');
+    }
+});
 
 // ── Quill Editor ────────────────────────────────────────────
 const quill = new Quill('#editor', {

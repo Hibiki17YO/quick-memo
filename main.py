@@ -9,7 +9,7 @@ import webview
 from db import init_db, get_setting
 from app import app
 from hotkey import HotkeyListener
-from desktop import create_window
+from desktop import create_window, WindowAPI
 
 logging.basicConfig(
     level=logging.INFO,
@@ -90,7 +90,8 @@ def main():
     hotkey_thread.start()
 
     logger.info("Opening memo window...")
-    window = create_window()
+    api = WindowAPI()
+    window = create_window(api)
     webview.start(debug=False)
 
     logger.info("Application closed.")
